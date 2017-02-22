@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export PERMISSIVE_GO=y
 echo "Build Release"
 hack/build-release.sh
 echo "Build Images"
