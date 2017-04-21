@@ -3,8 +3,7 @@
 echo "Creating router user"
 echo \
     '{"kind":"ServiceAccount","apiVersion":"v1","metadata":{"name":"router"}}' \
-    | oc create -f 
-
+    | oc create -f -
 
 echo "Add router user"
 
