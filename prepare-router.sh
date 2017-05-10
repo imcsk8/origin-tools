@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#Brute force open ports in case there's an exotic firewall like the one centos has
+iptables -F
+
 echo "Creating router user"
 echo \
     '{"kind":"ServiceAccount","apiVersion":"v1","metadata":{"name":"router"}}' \
