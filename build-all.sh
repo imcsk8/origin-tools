@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export OS_ONLY_BUILD_PLATFORMS="linux/amd64"
+
 echo "Build Base Images"
 hack/build-base-images.sh
 echo "Build Release"
