@@ -6,7 +6,7 @@ OS_RELEASE=n hack/build-go.sh
 
 echo "Building origin container"
 cp _output/local/bin/linux/amd64/openshift images/origin/bin/
-docker build -t openshift/origin images/origin
+hack/build-local-images.py origin
 
 echo "Deploying origin image"
 docker tag openshift/origin localhost:5000/openshift/origin
