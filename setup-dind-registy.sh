@@ -45,14 +45,12 @@ if [[ ${TAG} == *"fatal"* ]]; then
     exit
 fi
 
-#hack/dind-cluster.sh stop
-#hack/dind-cluster.sh start -rib
+hack/dind-cluster.sh stop
+hack/dind-cluster.sh start -rib
 
 echo "Starting registry"
 
 status=$(docker ps -a --filter name=registry --format {{.Status}})
-
-echo "STATUS: $status"
 
 if [[ ${status} == *"Exited"* ]]; then
     docker start registry
