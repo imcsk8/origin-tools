@@ -23,7 +23,7 @@ function setup_node_registry {
     docker exec -t $1 sh -c "echo \"ADD_REGISTRY='--add-registry=${IP}:5000 --add-registry=docker.io'\" >> /etc/sysconfig/docker"
     docker exec -t $1 systemctl restart docker
 
-   docker exec -t $1 sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/node-openshift-node-${2}/node-config.yaml"
+   docker exec -t $1 sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/node-openshift-node-${2}/node-config.yaml"
    docker exec -t $1 sh -c "systemctl restart openshift-node.service"
 
 }
@@ -107,8 +107,8 @@ fi
 
 # Setup registry on master
 setup_node_registry openshift-master
-docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/master/master-config.yaml" 
-docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/node-openshift-master-node/node-config.yaml"
+docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/master/master-config.yaml"
+docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/node-openshift-master-node/node-config.yaml"
 
 docker exec -t openshift-master sh -c "systemctl restart openshift-master.service"
 docker exec -t openshift-master sh -c "systemctl restart openshift-node.service"
