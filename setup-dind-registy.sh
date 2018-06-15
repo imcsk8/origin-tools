@@ -4,7 +4,7 @@
 # and pushes local images to the local registry
 # Ivan Chavero <ichavero@chavero.com.mx>
 
-# Usage: cd origin; ../setup-dind-registy.sh  <image1> <image2> ... <imageN>
+# Usage: cd origin; ../setup-dind-registy.sh  -i "<image1> <image2> ... <imageN>"
 
 IMAGES=""
 
@@ -14,12 +14,18 @@ DEFAULT_IMAGES="openshift/node openshift/origin-recycler openshift/origin-deploy
 
 dind_restart=false
 image_build=true
+nodes="2"
 
 function setup_node_registry {
     docker exec -t $1 sh -c "echo \"BLOCK_REGISTRY='--block-registry=all'\" >> /etc/sysconfig/docker"
     docker exec -t $1 sh -c "echo \"INSECURE_REGISTRY='--insecure-registry=${IP}:5000'\" >> /etc/sysconfig/docker"
     docker exec -t $1 sh -c "echo \"ADD_REGISTRY='--add-registry=${IP}:5000 --add-registry=docker.io'\" >> /etc/sysconfig/docker"
+    docker exec -t $1 sh -c "echo \"ADD_REGISTRY='--add-registry=${IP}:5000 --add-registry=docker.io'\" >> /etc/sysconfig/docker"
     docker exec -t $1 systemctl restart docker
+
+   docker exec -t $1 sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/node-openshift-node-${2}/node-config.yaml"
+   docker exec -t $1 sh -c "systemctl restart openshift-node.service"
+
 }
 
 function build_images {
@@ -38,7 +44,7 @@ function push_images {
     done
 }
 
-while getopts ":i:rn" opt; do
+while getopts ":i:rnN:" opt; do
   case ${opt} in
     i )
         echo "Building images: $OPTARG"
@@ -48,13 +54,19 @@ while getopts ":i:rn" opt; do
         echo "Restart dind"
         dind_restart=true
       ;;
-   n)
-      echo "Images will not be built"
-      image_build=false
-      ;;
-    \? ) echo "Usage: cmd [-i images] [-s Restart dind]"
-         exit
-      ;;
+    n)
+       echo "Images will not be built"
+       image_build=false
+       ;;
+
+    N)
+       nodes=$OPTARG
+       echo "Creating a cluster with $nodes nodes"
+       ;;
+    \?)
+       echo "Usage: cmd [-i images] [-r Restart dind] [-N nodes]"
+       exit
+       ;;
   esac
 done
 
@@ -73,7 +85,7 @@ if [[ ${status} == *"Up"* ]] && [[ ${dind_restart} != true ]]; then
 else
     echo "Starting dind"
     hack/dind-cluster.sh stop
-    hack/dind-cluster.sh start -rib
+    hack/dind-cluster.sh start -rib -N $nodes
 fi
 
 
@@ -93,9 +105,18 @@ if [[ ${IMAGES} == "" ]]; then
     IMAGES=$DEFAULT_IMAGES
 fi
 
+# Setup registry on master
 setup_node_registry openshift-master
-setup_node_registry openshift-node-1
-setup_node_registry openshift-node-2
+docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/master/master-config.yaml" 
+docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: openshift\/${IP}:5000/' /data/openshift.local.config/node-openshift-master-node/node-config.yaml"
+
+docker exec -t openshift-master sh -c "systemctl restart openshift-master.service"
+docker exec -t openshift-master sh -c "systemctl restart openshift-node.service"
+
+# Setup registry on nodes
+for i in `seq 1 $nodes`; do
+    setup_node_registry openshift-node-${i} ${i}
+done
 
 if [[ ${image_build}} != false ]]; then
     build_images
