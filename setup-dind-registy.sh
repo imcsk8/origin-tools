@@ -13,6 +13,7 @@ IFACE="enp0s25"
 DEFAULT_IMAGES="openshift/node openshift/origin-recycler openshift/origin-deployer openshift/origin-haproxy-router openshift/origin-nginx-router openshift/origin-template-service-broker openshift/origin-sti-builder openshift/origin-keepalived-ipfailover openshift/origin-f5-router openshift/origin-docker-builder openshift/origin-control-plane"
 
 dind_restart=false
+push_local_images=false
 image_build=true
 nodes="2"
 
@@ -21,10 +22,22 @@ function setup_node_registry {
     docker exec -t $1 sh -c "echo \"INSECURE_REGISTRY='--insecure-registry=${IP}:5000'\" >> /etc/sysconfig/docker"
     docker exec -t $1 sh -c "echo \"ADD_REGISTRY='--add-registry=${IP}:5000 --add-registry=docker.io'\" >> /etc/sysconfig/docker"
     docker exec -t $1 sh -c "echo \"ADD_REGISTRY='--add-registry=${IP}:5000 --add-registry=docker.io'\" >> /etc/sysconfig/docker"
+    #docker exec -t $1 sh -c "sed -i -e 's/registries = \[\]//' -e \"s/registries.insecure\]/registries.insecure]\nregistries = ['${IP}:5000']/\" /etc/containers/registries.conf"
+    docker exec -t $1 sh -c "sed -i '/^\[registries.search\]$/{\$!{N;s/^\[registries.search\]\nregistries .*/\[registries.search\]\nregistries = \[\"${IP}:5000\", \"docker.io\", \"registry.fedoraproject.org\", \"registry.access.redhat.com\"\]/g;ty;P;D;:y}}' /etc/containers/registries.conf"
+    docker exec -t $1 sh -c "sed -i '/^\[registries.insecure\]$/{\$!{N;s/^\[registries.insecure\]\nregistries .*/\[registries.insecure\]\nregistries = \[\"${IP}:5000\"\]/g;ty;P;D;:y}}' /etc/containers/registries.conf"
     docker exec -t $1 systemctl restart docker
 
    docker exec -t $1 sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/node-openshift-node-${2}/node-config.yaml"
    docker exec -t $1 sh -c "systemctl restart openshift-node.service"
+
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-deployer:${TAG}"
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-deployer:latest"
+
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-haproxy-router:${TAG}"
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-haproxy-router:latest"
+
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-pod:${TAG}"
+   docker exec -t $1 sh -c "docker pull ${IP}:5000/openshift/origin-pod:latest"
 
 }
 
@@ -46,17 +59,21 @@ function push_images {
 
 while getopts ":i:rnN:" opt; do
   case ${opt} in
-    i )
+    i)
         echo "Building images: $OPTARG"
         IMAGES=$OPTARG
       ;;
-    r )
+    r)
         echo "Restart dind"
         dind_restart=true
       ;;
     n)
        echo "Images will not be built"
        image_build=false
+       ;;
+    p)
+       echo "Local Images will be pushed to registry"
+       push_local_images=true
        ;;
 
     N)
@@ -110,6 +127,7 @@ setup_node_registry openshift-master
 docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/master/master-config.yaml"
 docker exec -t openshift-master sh -c "sed -i 's/format: openshift/format: ${IP}:5000\/openshift/' /data/openshift.local.config/node-openshift-master-node/node-config.yaml"
 
+
 docker exec -t openshift-master sh -c "systemctl restart openshift-master.service"
 docker exec -t openshift-master sh -c "systemctl restart openshift-node.service"
 
@@ -122,4 +140,6 @@ if [[ ${image_build}} != false ]]; then
     build_images
 fi
 
-push_images
+if [[ ${push_local_images}} != false ]]; then
+    push_images
+fi
