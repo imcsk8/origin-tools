@@ -17,6 +17,8 @@ docker push ${IP}:5000/openshift/cluster-ingress-operator
 cd ${ORIGIN_PATH}
 
 echo "Creating the Cluster Ingress Operator"
+${OC} create -f ${CIO_REPO}/deploy/cio-namespace.yaml
+${OC} project openshift-cluster-ingress-operator
 ${OC} create -f ${CIO_REPO}/deploy/crd.yaml
 ${OC} create -f ${CIO_REPO}/deploy/rbac.yaml
 ${OC} create -f ${CIO_REPO}/deploy/operator.yaml
