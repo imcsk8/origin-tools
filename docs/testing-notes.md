@@ -21,7 +21,7 @@ make build-extended-test
 TEST_ONLY=1 test/extended/conformance.sh 2>&1 | tee conformance.log
 ```
 
-###Focus on specific tests
+### Focus on specific tests
 
 This is a bit tricky you have to se the FOCUS environment variable which internally
 sets the --ginkgo.focus for the test suite.
