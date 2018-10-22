@@ -23,8 +23,8 @@ oc create -f cluster-ingress-operator/manifests/01-role-binding.yaml
 oc create -f cluster-ingress-operator/manifests/01-role.yaml
 oc create -f cluster-ingress-operator/manifests/01-service-account.yaml
 ```
-//Created Manually to avoid creating an operator deployment since we're running
-our operator locally//
+*Created Manually to avoid creating an operator deployment since we're running
+our operator locally*
 
 **Run the Operator locally**
 
