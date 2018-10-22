@@ -34,3 +34,29 @@ cd /home/ichavero/Go/src/github.com/openshift/cluster-ingress-operator/
 operator-sdk up local namespace openshift-ingress-operator --kubeconfig=$KUBECONFIG
 ```
 
+
+# AWS Notes
+
+Currently the installer works with libvirt and AWS, sometimes direct AWS operations are needed:
+
+##List instances
+
+```
+aws ec2 describe-instances --filters "Name=tag:Name,Values=<CLUSTER_NAME>*" --output table
+```
+
+##Get public address of a node
+
+```
+oc get nodes
+```
+
+Select the address of the desired node and ask aws for the public ip:
+
+
+```
+aws ec2 describe-instances --filters  "Name=network-interface.private-dns-name,Values=ip-10-0-30-57.us-west-1.compute.internal" --output table | grep PublicDnsName
+```
+
+Be happy
+
