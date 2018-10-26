@@ -1,7 +1,9 @@
 
 # Environment variables for the OpenShift 4.x installer
 # Modify them to suit your environment
-# source them: source openshift-libvirt.sh
+# copy them to the installer path and source them:
+# cp openshift-libvirt.sh ~/Go/src/github.com/openshift/installer/.
+# source openshift-libvirt.sh
 
 export OPENSHIFT_INSTALL_PLATFORM=libvirt
 export OPENSHIFT_INSTALL_BASE_DOMAIN=tt.testing
