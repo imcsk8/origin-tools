@@ -12,7 +12,6 @@ function start_openshift {
 
 function stop_openshift {
     bin/openshift-install destroy cluster --dir $OPENSHIFT_INSTALL_CLUSTER_NAME
-    rm terraform.tfvars
     rm -rf $OPENSHIFT_INSTALL_CLUSTER_NAME
 }
 
