@@ -55,6 +55,11 @@ rm -rf $OPENSHIFT_INSTALL_CLUSTER_NAME
 
 Here's a little [Helper Script](https://raw.githubusercontent.com/imcsk8/origin-tools/master/openshift-installer-libvirt.sh)
 
+## AWS
+
+Same notes and instructions just change `OPENSHIFT_INSTALL_PLATFORM` to aws and (obviously) configure your
+aws client.
+
 ## References
 https://github.com/openshift/installer/blob/master/docs/dev/libvirt-howto.md
 https://github.com/openshift/installer
