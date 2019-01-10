@@ -2,7 +2,7 @@
 
 echo "Preparing server for running all in one cluster"
 echo "Installing docker"
-yum install -y docker
+yum install -y docker wget
 systemctl enable docker
 systemctl start docker
 cd
