@@ -3,6 +3,7 @@
 echo "Preparing server for running all in one cluster"
 echo "Installing docker"
 yum install -y docker wget
+sed $'s/OPTIONS=\''/OPTIONS=\''--insecure-registry 172.30.0.0\/16 /' /etc/sysconfig/docker
 systemctl enable docker
 systemctl start docker
 cd
