@@ -5,7 +5,7 @@ echo "Installing docker"
 yum install -y docker wget
 sed -i $'s/OPTIONS=\''/OPTIONS=\''--insecure-registry 172.30.0.0\/16 /' /etc/sysconfig/docker
 systemctl enable docker
-systemctl start docker
+systemctl restart docker
 cd
 mkdir openshift
 cd openshift 
