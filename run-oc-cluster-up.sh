@@ -18,4 +18,7 @@ tar -zxvf openshift-origin-server-v3.11.0-0cbc58b-linux-64bit.tar.gz
 
 export PATH=$PATH:/root/openshift/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit:/root/openshift/openshift-origin-server-v3.11.0-0cbc58b-linux-64bit
 
+# Flush firewall rules
+iptables -F
+
 oc cluster up -v 10 --base-dir=oc-cluster-up 2>&1 | tee oc-cluster-up.log
